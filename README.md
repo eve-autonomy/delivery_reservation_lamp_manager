@@ -29,10 +29,10 @@ The lighting pattern is defined as follows.
 
 ## Input and Output
 - input
-  - from eve oss
+  - from [autoware_state_machine](https://github.com/eve-autonomy/autoware_state_machine)
     - `/autoware_state_machine/lock_state` : Reservation status for on-demand delivery.
 - output
-  - to tier iv oss
+  - to [dio_ros_driver](https://github.com/tier4/dio_ros_driver)
     - `/dio/dout3` : GPIO output topic. (this topic remapping from /delivery_reservation_lamp_out)
 
 ## Node Graph
