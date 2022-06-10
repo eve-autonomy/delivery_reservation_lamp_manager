@@ -1,0 +1,15 @@
+@startuml
+
+rectangle "eve oss" {
+  usecase "/autoware_state_machine"
+  usecase "/delivery_reservation_lamp_manager"
+}
+
+rectangle "tier iv oss" {
+  usecase "/dio_ros_driver"
+}
+(/autoware_state_machine) -> (/delivery_reservation_lamp_manager) : /autoware_state_machine/lock_state
+
+(/delivery_reservation_lamp_manager) -> (/dio_ros_driver) : /dio/dout3
+
+@enduml
