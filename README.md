@@ -22,7 +22,7 @@ Lighting patterns are listed below.
     </tr>
     <tr>
       <td>Reserved</td>
-      <td>Keeps lighting</td>
+      <td>Light up</td>
     </tr>
   </tbody>
 </table>
