@@ -1,7 +1,7 @@
 # Lamp manager for delivery reservation
 
 ## Overview
-By changing the lighting pattern of the lamp, this node notifies senders of the on-demand delivery reservation status. 
+By changing lighting pattern of the lamp, this node notifies surrounding workers of on-demand delivery reservation status through `/dio_ros_driver`. 
 
 The lighting pattern is defined as follows.
 <table>
