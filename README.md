@@ -14,7 +14,7 @@ Lighting patterns are listed below.
   <tbody>
     <tr>
       <td>Not reserved</td>
-      <td>Keeps going off</td>
+      <td>Off</td>
     </tr>
     <tr>
       <td>In progress</td>
