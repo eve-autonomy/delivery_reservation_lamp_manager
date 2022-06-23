@@ -3,7 +3,7 @@
 ## Overview
 By changing lighting pattern of the lamp, this node notifies surrounding workers of on-demand delivery reservation status through `/dio_ros_driver`. 
 
-The lighting pattern is defined as follows.
+Lighting patterns are listed below.
 <table>
   <thead>
     <tr>
