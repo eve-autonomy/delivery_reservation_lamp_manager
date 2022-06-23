@@ -1,4 +1,4 @@
-# delivery_reservation_lamp_manager
+# Lamp manager for delivery reservation
 
 ## Overview
 By changing the lighting pattern of the lamp, this node notifies senders of the on-demand delivery reservation status. 
