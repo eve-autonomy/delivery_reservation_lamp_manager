@@ -33,7 +33,7 @@ The lighting pattern is defined as follows.
     - `/autoware_state_machine/lock_state` : Reservation status for on-demand delivery.
 - output
   - to [dio_ros_driver](https://github.com/tier4/dio_ros_driver)
-    - `/dio/dout3` : GPIO output topic. (this topic remapping from /delivery_reservation_lamp_out)
+    - `/dio/dout3` : Digital-out assignment to a 3rd pin in [0-7] general-purpose outputs. This topic is remapped from `/delivery_reservation_lamp_out`.
 
 ## Node Graph
 ![node graph](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/eve-autonomy/delivery_reservation_lamp_manager/docs/node_graph.pu)
