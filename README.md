@@ -36,7 +36,7 @@ Lighting patterns are listed below.
     - `/dio/dout3` : Digital-out assignment to a 3rd pin in [0-7] general-purpose outputs. This topic is remapped from `/delivery_reservation_lamp_out`.
 
 ## Node Graph
-![node graph](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/eve-autonomy/delivery_reservation_lamp_manager/main/docs/node_graph.pu)
+![node graph](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/eve-autonomy/delivery_reservation_lamp_manager/main/docs/node_graph.pu)
 
 ## Parameter description
 This node has no parameters.
