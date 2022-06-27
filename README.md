@@ -4,28 +4,12 @@
 By changing lighting pattern of the lamp, this node notifies surrounding workers of on-demand delivery reservation status through `/dio_ros_driver`. 
 
 Lighting patterns are listed below.
-<table>
-  <thead>
-    <tr>
-      <th scope="col">Reservation status</th>
-	    <th scope="col">lighting pattern</th>
-	  </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Not reserved</td>
-      <td>Off</td>
-    </tr>
-    <tr>
-      <td>In progress</td>
-      <td>Blinks</td>
-    </tr>
-    <tr>
-      <td>Reserved</td>
-      <td>Light up</td>
-    </tr>
-  </tbody>
-</table>
+
+|Reservation status|lighting pattern|
+|:-----------------|:---------------|
+|Not reserved      |Off             |
+|In progress       |Blinks          |
+|Reserved          |Light up        |
 
 ## Input and Output
 - input
