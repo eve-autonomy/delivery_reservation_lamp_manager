@@ -1,11 +1,15 @@
 @startuml
 
+left to right direction
+
 usecase "/autoware_state_machine"
+usecase "/shutdown_manager"
 usecase "/delivery_reservation_lamp_manager" #LightCoral
 usecase "/dio_ros_driver"
 
-(/autoware_state_machine) -> (/delivery_reservation_lamp_manager) : /autoware_state_machine/lock_state
+(/autoware_state_machine) --> (/delivery_reservation_lamp_manager) : /autoware_state_machine/lock_state
+(/shutdown_manager) --> (/delivery_reservation_lamp_manager) : /shutdown_manager/state
 
-(/delivery_reservation_lamp_manager) -> (/dio_ros_driver) : /dio/dout3
+(/delivery_reservation_lamp_manager) --> (/dio_ros_driver) : /dio/dout3
 
 @enduml
