@@ -27,28 +27,42 @@ public:
   explicit DeliveryReservationLampManager(const rclcpp::NodeOptions & options);
   ~DeliveryReservationLampManager();
 
+  enum BlinkType
+  {
+    FAST,
+    SLOW
+  };
+
   // Publisher
   rclcpp::Publisher<dio_ros_driver::msg::DIOPort>::SharedPtr pub_delivery_reservation_lamp_;
 
   // Subscription
   rclcpp::Subscription<autoware_state_machine_msgs::msg::StateLock>::SharedPtr sub_state_;
 
-  #define BLINK_ON_DURATION (1.0)
-  #define BLINK_OFF_DURATION (1.0)
+  #define BLINK_FAST_ON_DURATION (0.5)
+  #define BLINK_FAST_OFF_DURATION (0.5)
+  #define BLINK_SLOW_ON_DURATION (1.0)
+  #define BLINK_SLOW_OFF_DURATION (1.0)
   #define ACTIVE_POLARITY (false)
 
-  std::array<double, 2> blink_duration_table_ = {
-    BLINK_OFF_DURATION,
-    BLINK_ON_DURATION
+  std::array<double, 2> fast_blink_duration_table_ = {
+    BLINK_FAST_OFF_DURATION,
+    BLINK_FAST_ON_DURATION
+  };
+
+  std::array<double, 2> slow_blink_duration_table_ = {
+    BLINK_SLOW_OFF_DURATION,
+    BLINK_SLOW_ON_DURATION
   };
 
   rclcpp::TimerBase::SharedPtr blink_timer_;
   uint64_t blink_sequence_;
+  BlinkType blink_type_;
   bool active_polarity_;
 
   void callbackStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
   void publishLamp(const bool value);
-  void startLampBlinkOperation(void);
+  void startLampBlinkOperation(BlinkType type);
   double getTimerDuration(void);
   void lampBlinkOperationCallback(void);
   void setPeriod(const double new_period);

@@ -83,9 +83,10 @@ void DeliveryReservationLampManager::publishLamp(const bool value)
   pub_delivery_reservation_lamp_->publish(msg);
 }
 
-void DeliveryReservationLampManager::startLampBlinkOperation(void)
+void DeliveryReservationLampManager::startLampBlinkOperation(BlinkType type)
 {
   blink_sequence_ = 0;
+  blink_type_ = type;
   double duration = getTimerDuration();
 
   setPeriod(duration);
@@ -93,10 +94,17 @@ void DeliveryReservationLampManager::startLampBlinkOperation(void)
 
 double DeliveryReservationLampManager::getTimerDuration(void)
 {
-  if (blink_duration_table_.size() <= blink_sequence_) {
-    blink_sequence_ = 0;
+  if (blink_type_ == BlinkType::FAST) {
+    if (fast_blink_duration_table_.size() <= blink_sequence_) {
+      blink_sequence_ = 0;
+    }
+    return fast_blink_duration_table_.at(blink_sequence_);
+  } else {
+    if (slow_blink_duration_table_.size() <= blink_sequence_) {
+      blink_sequence_ = 0;
+    }
+    return slow_blink_duration_table_.at(blink_sequence_);
   }
-  return blink_duration_table_.at(blink_sequence_);
 }
 
 void DeliveryReservationLampManager::lampBlinkOperationCallback(void)
