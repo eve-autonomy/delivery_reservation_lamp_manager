@@ -37,7 +37,8 @@ public:
   rclcpp::Publisher<dio_ros_driver::msg::DIOPort>::SharedPtr pub_delivery_reservation_lamp_;
 
   // Subscription
-  rclcpp::Subscription<autoware_state_machine_msgs::msg::StateLock>::SharedPtr sub_state_;
+  rclcpp::Subscription<autoware_state_machine_msgs::msg::StateLock>::SharedPtr sub_reservation_lock_state_;
+  rclcpp::Subscription<autoware_state_machine_msgs::msg::StateLock>::SharedPtr sub_shutdown_state_;
 
   #define BLINK_FAST_ON_DURATION (0.5)
   #define BLINK_FAST_OFF_DURATION (0.5)
@@ -60,7 +61,12 @@ public:
   BlinkType blink_type_;
   bool active_polarity_;
 
-  void callbackStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
+  uint16_t current_reservation_lock_state_ = autoware_state_machine_msgs::msg::StateLock::STATE_OFF;
+  uint16_t current_shutdown_state_ = autoware_state_machine_msgs::msg::StateLock::STATE_INACTIVE_FOR_SHUTDOWN;
+
+  void callbackReservationStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
+  void callbackShutdownStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
+  void changeLampCondition(const uint16_t state);
   void publishLamp(const bool value);
   void startLampBlinkOperation(BlinkType type);
   double getTimerDuration(void);
