@@ -11,6 +11,7 @@ Lighting patterns are listed below.
 |In progress       |Blink once every second |
 |Reserved          |Light up        |
 |Standby for shutdown |Blink once every 0.5 seconds |
+|Start of shutdown |Light up        |
 
 ## Input and Output
 - input

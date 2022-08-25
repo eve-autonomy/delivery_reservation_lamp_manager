@@ -71,11 +71,12 @@ void DeliveryReservationLampManager::callbackReservationStateMessage(
     "[DeliveryReservationLampManager::callbackReservationStateMessage]state: %d", msg->state);
 
   current_reservation_lock_state_ = msg->state;
-  if (current_shutdown_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_STANDBY_FOR_SHUTDOWN) {
+  if ((current_shutdown_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_STANDBY_FOR_SHUTDOWN) ||
+    (current_shutdown_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_START_OF_SHUTDOWN)) {
     RCLCPP_DEBUG_THROTTLE(
       this->get_logger(),
       *this->get_clock(), 1.0,
-      "[DeliveryReservationLampManager]Current on a shutdown standby ");
+      "[DeliveryReservationLampManager]Currently in shutdown standby or in progress ");
     return;
   }
   changeLampCondition(msg->state);
@@ -90,21 +91,21 @@ void DeliveryReservationLampManager::callbackShutdownStateMessage(
     "[DeliveryReservationLampManager::callbackShutdownStateMessage]state: %d", msg->state);
 
   current_shutdown_state_ = msg->state;
-  if (msg->state == autoware_state_machine_msgs::msg::StateLock::STATE_STANDBY_FOR_SHUTDOWN) {
-    changeLampCondition(msg->state);
-  } else {
+  if (msg->state == autoware_state_machine_msgs::msg::StateLock::STATE_INACTIVE_FOR_SHUTDOWN) {
     changeLampCondition(current_reservation_lock_state_);
+  } else {
+    changeLampCondition(msg->state);
   }
 }
 
 void DeliveryReservationLampManager::changeLampCondition(const uint16_t state)
 {
   blink_timer_->cancel();
-  bool value = false;
-  if (state == autoware_state_machine_msgs::msg::StateLock::STATE_ON) {
-    value = true;
+  if (state == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
+    publishLamp(false);
+    return;
   }
-  publishLamp(value);
+  publishLamp(true);
   if (state == autoware_state_machine_msgs::msg::StateLock::STATE_VERIFICATION) {
     startLampBlinkOperation(BlinkType::SLOW);
   } else if (state == autoware_state_machine_msgs::msg::StateLock::STATE_STANDBY_FOR_SHUTDOWN) {
