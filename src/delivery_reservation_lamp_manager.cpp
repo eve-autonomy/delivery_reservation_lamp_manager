@@ -43,13 +43,26 @@ DeliveryReservationLampManager::DeliveryReservationLampManager(
   // Timer
   std::chrono::milliseconds timer_period_msec;
   timer_period_msec = std::chrono::duration_cast<std::chrono::milliseconds>(
-    std::chrono::duration<double>(1.0));
-
-  auto timer_callback = std::bind(&DeliveryReservationLampManager::lampBlinkOperationCallback, this);
-  blink_timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
+    std::chrono::duration<double>(1.0 / 10.0));
+  
+  auto timer_callback = std::bind(&DeliveryReservationLampManager::onTimer, this);
+  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
     this->get_clock(), timer_period_msec, std::move(timer_callback),
     this->get_node_base_interface()->get_context()
   );
+
+  // Blink Timer
+  std::chrono::milliseconds blink_timer_period_msec;
+  blink_timer_period_msec = std::chrono::duration_cast<std::chrono::milliseconds>(
+    std::chrono::duration<double>(1.0));
+
+  auto blink_timer_callback = std::bind(&DeliveryReservationLampManager::lampBlinkOperationCallback, this);
+  blink_timer_ = std::make_shared<rclcpp::GenericTimer<decltype(blink_timer_callback)>>(
+    this->get_clock(), blink_timer_period_msec, std::move(blink_timer_callback),
+    this->get_node_base_interface()->get_context()
+  );
+
+  this->get_node_timers_interface()->add_timer(timer_, nullptr);
   this->get_node_timers_interface()->add_timer(blink_timer_, nullptr);
   blink_timer_->cancel();
 
@@ -70,46 +83,42 @@ void DeliveryReservationLampManager::callbackReservationStateMessage(
     *this->get_clock(), 1.0,
     "[DeliveryReservationLampManager::callbackReservationStateMessage]state: %d", msg->state);
 
-  current_reservation_lock_state_ = msg->state;
-  if ((current_shutdown_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_STANDBY_FOR_SHUTDOWN) ||
-    (current_shutdown_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_START_OF_SHUTDOWN)) {
-    RCLCPP_DEBUG_THROTTLE(
-      this->get_logger(),
-      *this->get_clock(), 1.0,
-      "[DeliveryReservationLampManager]Currently in shutdown standby or in progress ");
-    return;
-  }
-  changeLampCondition(msg->state);
+  receive_reservation_lock_state_ = msg->state;
 }
 
 void DeliveryReservationLampManager::callbackShutdownStateMessage(
-  const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg)
+  const shutdown_manager_msgs::msg::StateShutdown::ConstSharedPtr msg)
 {
   RCLCPP_INFO_THROTTLE(
     this->get_logger(),
     *this->get_clock(), 1.0,
     "[DeliveryReservationLampManager::callbackShutdownStateMessage]state: %d", msg->state);
 
-  current_shutdown_state_ = msg->state;
-  if (msg->state == autoware_state_machine_msgs::msg::StateLock::STATE_INACTIVE_FOR_SHUTDOWN) {
-    changeLampCondition(current_reservation_lock_state_);
-  } else {
-    changeLampCondition(msg->state);
-  }
+  receive_shutdown_state_ = msg->state;
 }
 
-void DeliveryReservationLampManager::changeLampCondition(const uint16_t state)
+void DeliveryReservationLampManager::onTimer(void)
 {
-  blink_timer_->cancel();
-  if (state == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
-    publishLamp(false);
+  if ((receive_reservation_lock_state_ == current_reservation_lock_state_) &&
+    (receive_shutdown_state_ == current_shutdown_state_)) {
     return;
   }
-  publishLamp(true);
-  if (state == autoware_state_machine_msgs::msg::StateLock::STATE_VERIFICATION) {
-    startLampBlinkOperation(BlinkType::SLOW);
-  } else if (state == autoware_state_machine_msgs::msg::StateLock::STATE_STANDBY_FOR_SHUTDOWN) {
+  current_reservation_lock_state_ = receive_reservation_lock_state_;
+  current_shutdown_state_ = receive_shutdown_state_;
+
+  blink_timer_->cancel();
+  if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_STANDBY_FOR_SHUTDOWN) {
     startLampBlinkOperation(BlinkType::FAST);
+  } else if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_START_OF_SHUTDOWN) {
+    startLampBlinkOperation(BlinkType::TWO_BLINKS);
+  } else {
+    if (current_reservation_lock_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
+      publishLamp(false);
+    } else if (current_reservation_lock_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_VERIFICATION) {
+      startLampBlinkOperation(BlinkType::SLOW);
+    } else {
+      publishLamp(true);
+    }
   }
 }
 
@@ -120,8 +129,9 @@ void DeliveryReservationLampManager::publishLamp(const bool value)
   pub_delivery_reservation_lamp_->publish(msg);
 }
 
-void DeliveryReservationLampManager::startLampBlinkOperation(BlinkType type)
+void DeliveryReservationLampManager::startLampBlinkOperation(const BlinkType type)
 {
+  publishLamp(true);
   blink_sequence_ = 0;
   blink_type_ = type;
   double duration = getTimerDuration();
@@ -136,6 +146,11 @@ double DeliveryReservationLampManager::getTimerDuration(void)
       blink_sequence_ = 0;
     }
     return fast_blink_duration_table_.at(blink_sequence_);
+  } else if (blink_type_ == BlinkType::TWO_BLINKS) {
+    if (two_blinks_duration_table_.size() <= blink_sequence_) {
+      blink_sequence_ = 0;
+    }
+    return two_blinks_duration_table_.at(blink_sequence_);
   } else {
     if (slow_blink_duration_table_.size() <= blink_sequence_) {
       blink_sequence_ = 0;
