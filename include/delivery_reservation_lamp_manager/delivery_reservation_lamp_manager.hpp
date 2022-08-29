@@ -18,6 +18,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "autoware_state_machine_msgs/msg/state_lock.hpp"
 #include "dio_ros_driver/msg/dio_port.hpp"
+#include "shutdown_manager_msgs/msg/state_shutdown.hpp"
 
 namespace delivery_reservation_lamp_manager
 {
@@ -38,7 +39,7 @@ public:
 
   // Subscription
   rclcpp::Subscription<autoware_state_machine_msgs::msg::StateLock>::SharedPtr sub_reservation_lock_state_;
-  rclcpp::Subscription<autoware_state_machine_msgs::msg::StateLock>::SharedPtr sub_shutdown_state_;
+  rclcpp::Subscription<shutdown_manager_msgs::msg::StateShutdown>::SharedPtr sub_shutdown_state_;
 
   #define BLINK_FAST_ON_DURATION (0.5)
   #define BLINK_FAST_OFF_DURATION (0.5)
@@ -62,11 +63,10 @@ public:
   bool active_polarity_;
 
   uint16_t current_reservation_lock_state_ = autoware_state_machine_msgs::msg::StateLock::STATE_OFF;
-  uint16_t current_shutdown_state_ = autoware_state_machine_msgs::msg::StateLock::STATE_INACTIVE_FOR_SHUTDOWN;
+  uint16_t current_shutdown_state_ = shutdown_manager_msgs::msg::StateShutdown::STATE_INACTIVE_FOR_SHUTDOWN;
 
   void callbackReservationStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
-  void callbackShutdownStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
-  void changeLampCondition(const uint16_t state);
+  void callbackShutdownStateMessage(const shutdown_manager_msgs::msg::StateShutdown::ConstSharedPtr msg);
   void publishLamp(const bool value);
   void startLampBlinkOperation(BlinkType type);
   double getTimerDuration(void);

@@ -29,7 +29,7 @@ DeliveryReservationLampManager::DeliveryReservationLampManager(
     rclcpp::QoS{3}.transient_local(),
     std::bind(&DeliveryReservationLampManager::callbackReservationStateMessage, this, std::placeholders::_1)
   );
-  sub_shutdown_state_ = this->create_subscription<autoware_state_machine_msgs::msg::StateLock>(
+  sub_shutdown_state_ = this->create_subscription<shutdown_manager_msgs::msg::StateShutdown>(
     "/shutdown_manager/state",
     rclcpp::QoS{3}.transient_local(),
     std::bind(&DeliveryReservationLampManager::callbackShutdownStateMessage, this, std::placeholders::_1)
