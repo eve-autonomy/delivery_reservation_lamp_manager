@@ -17,7 +17,7 @@ Lighting patterns are listed below.
 |Shutdown status|lighting pattern|
 |:-----------------|:---------------|
 |Standby for shutdown |Blinks(2Hz)  |
-|Start of shutdown |Repeat the following;<br>Blinks twice at 0.2 second intervals, and the second light off for 1.5 seconds.|
+|Successful shutdown initiation |After repeating the following twice, Light off;<br>Blinks twice at 0.2 second intervals, and the second light off for 1.5 seconds.|
 
 ## Input and Output
 - input

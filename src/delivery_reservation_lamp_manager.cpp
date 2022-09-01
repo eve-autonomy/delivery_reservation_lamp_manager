@@ -114,14 +114,14 @@ void DeliveryReservationLampManager::onTimer(void)
   blink_timer_->cancel();
   if ((current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_STANDBY_FOR_SHUTDOWN) ||
     (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_START_OF_SHUTDOWN)) {
-    startLampBlinkOperation(BlinkType::FAST_BLINK);
+    startLampBlinkOperation(BlinkType::FAST_BLINK, UNLIMITED_BLINKS);
   } else if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_SUCCESSFUL_SHUTDOWN_INITIATION) {
-    startLampBlinkOperation(BlinkType::TWO_BLINKS);
+    startLampBlinkOperation(BlinkType::TWO_BLINKS_TWICE, TWO_BLINKS_MAX_RETRY_COUNT);
   } else {
     if (current_reservation_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
       publishLamp(false);
     } else if (current_reservation_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_VERIFICATION) {
-      startLampBlinkOperation(BlinkType::SLOW_BLINK);
+      startLampBlinkOperation(BlinkType::SLOW_BLINK, UNLIMITED_BLINKS);
     } else {
       publishLamp(true);
     }
@@ -135,10 +135,12 @@ void DeliveryReservationLampManager::publishLamp(const bool value)
   pub_delivery_reservation_lamp_->publish(msg);
 }
 
-void DeliveryReservationLampManager::startLampBlinkOperation(const BlinkType type)
+void DeliveryReservationLampManager::startLampBlinkOperation(const BlinkType type, const int max_blink_retry_count)
 {
   publishLamp(true);
   blink_sequence_ = 0;
+  blink_retry_count_ = 0;
+  max_blink_retry_count_ = max_blink_retry_count;
   blink_type_ = type;
   double duration = getTimerDuration();
 
@@ -149,16 +151,19 @@ double DeliveryReservationLampManager::getTimerDuration(void)
 {
   if (blink_type_ == BlinkType::FAST_BLINK) {
     if (fast_blink_duration_table_.size() <= blink_sequence_) {
+      blink_retry_count_++;
       blink_sequence_ = 0;
     }
     return fast_blink_duration_table_.at(blink_sequence_);
-  } else if (blink_type_ == BlinkType::TWO_BLINKS) {
+  } else if (blink_type_ == BlinkType::TWO_BLINKS_TWICE) {
     if (two_blinks_duration_table_.size() <= blink_sequence_) {
+      blink_retry_count_++;
       blink_sequence_ = 0;
     }
     return two_blinks_duration_table_.at(blink_sequence_);
   } else {
     if (slow_blink_duration_table_.size() <= blink_sequence_) {
+      blink_retry_count_++;
       blink_sequence_ = 0;
     }
     return slow_blink_duration_table_.at(blink_sequence_);
@@ -171,6 +176,14 @@ void DeliveryReservationLampManager::lampBlinkOperationCallback(void)
 
   blink_sequence_++;
   double duration = getTimerDuration();
+
+  // If the maximum count of retries is exceeded,
+  //  the LED will turn off and stop blinking.
+  if ((max_blink_retry_count_ != UNLIMITED_BLINKS) &&
+    (blink_retry_count_ >= max_blink_retry_count_)) {
+    publishLamp(false);
+    return;
+  }
 
   // odd sequence -> true : even sequence -> false
   publishLamp(blink_sequence_ % 2 ? true : false);

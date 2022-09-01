@@ -32,7 +32,7 @@ public:
   {
     FAST_BLINK,
     SLOW_BLINK,
-    TWO_BLINKS
+    TWO_BLINKS_TWICE
   };
 
   // Publisher
@@ -49,6 +49,10 @@ public:
   #define BLINK_FAST_OFF_DURATION (0.5)
   #define BLINK_SLOW_ON_DURATION (1.0)
   #define BLINK_SLOW_OFF_DURATION (1.0)
+
+  #define UNLIMITED_BLINKS (-1)
+  #define TWO_BLINKS_MAX_RETRY_COUNT (2)
+
   #define ACTIVE_POLARITY (false)
 
   std::array<double, 4> two_blinks_duration_table_ = {
@@ -72,6 +76,8 @@ public:
   rclcpp::TimerBase::SharedPtr blink_timer_;
   uint64_t blink_sequence_;
   BlinkType blink_type_;
+  int blink_retry_count_;
+  int max_blink_retry_count_;
   bool active_polarity_;
   uint16_t receive_reservation_state_;
   uint16_t current_reservation_state_;
@@ -82,7 +88,7 @@ public:
   void callbackShutdownStateMessage(const shutdown_manager_msgs::msg::StateShutdown::ConstSharedPtr msg);
   void onTimer(void);
   void publishLamp(const bool value);
-  void startLampBlinkOperation(const BlinkType type);
+  void startLampBlinkOperation(const BlinkType type, const int max_blink_retry_count);
   double getTimerDuration(void);
   void lampBlinkOperationCallback(void);
   void setPeriod(const double new_period);
