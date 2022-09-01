@@ -30,8 +30,8 @@ public:
 
   enum BlinkType
   {
-    FAST,
-    SLOW,
+    FAST_BLINK,
+    SLOW_BLINK,
     TWO_BLINKS
   };
 

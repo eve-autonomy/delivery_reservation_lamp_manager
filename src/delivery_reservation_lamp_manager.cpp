@@ -108,14 +108,14 @@ void DeliveryReservationLampManager::onTimer(void)
 
   blink_timer_->cancel();
   if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_STANDBY_FOR_SHUTDOWN) {
-    startLampBlinkOperation(BlinkType::FAST);
+    startLampBlinkOperation(BlinkType::FAST_BLINK);
   } else if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_START_OF_SHUTDOWN) {
     startLampBlinkOperation(BlinkType::TWO_BLINKS);
   } else {
     if (current_reservation_lock_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
       publishLamp(false);
     } else if (current_reservation_lock_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_VERIFICATION) {
-      startLampBlinkOperation(BlinkType::SLOW);
+      startLampBlinkOperation(BlinkType::SLOW_BLINK);
     } else {
       publishLamp(true);
     }
@@ -141,7 +141,7 @@ void DeliveryReservationLampManager::startLampBlinkOperation(const BlinkType typ
 
 double DeliveryReservationLampManager::getTimerDuration(void)
 {
-  if (blink_type_ == BlinkType::FAST) {
+  if (blink_type_ == BlinkType::FAST_BLINK) {
     if (fast_blink_duration_table_.size() <= blink_sequence_) {
       blink_sequence_ = 0;
     }
