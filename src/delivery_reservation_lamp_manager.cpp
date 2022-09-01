@@ -112,9 +112,10 @@ void DeliveryReservationLampManager::onTimer(void)
   current_shutdown_state_ = receive_shutdown_state_;
 
   blink_timer_->cancel();
-  if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_STANDBY_FOR_SHUTDOWN) {
+  if ((current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_STANDBY_FOR_SHUTDOWN) ||
+    (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_START_OF_SHUTDOWN)) {
     startLampBlinkOperation(BlinkType::FAST_BLINK);
-  } else if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_START_OF_SHUTDOWN) {
+  } else if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_SUCCESSFUL_SHUTDOWN_INITIATION) {
     startLampBlinkOperation(BlinkType::TWO_BLINKS);
   } else {
     if (current_reservation_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
