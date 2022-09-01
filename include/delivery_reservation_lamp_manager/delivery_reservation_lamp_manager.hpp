@@ -68,7 +68,7 @@ public:
     BLINK_SLOW_ON_DURATION
   };
 
-  rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr main_proc_timer_;
   rclcpp::TimerBase::SharedPtr blink_timer_;
   uint64_t blink_sequence_;
   BlinkType blink_type_;

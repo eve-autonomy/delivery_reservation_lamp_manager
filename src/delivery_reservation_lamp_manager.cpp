@@ -40,14 +40,14 @@ DeliveryReservationLampManager::DeliveryReservationLampManager(
 
   active_polarity_ = ACTIVE_POLARITY;
 
-  // Timer
-  std::chrono::milliseconds timer_period_msec;
-  timer_period_msec = std::chrono::duration_cast<std::chrono::milliseconds>(
+  // Main Proc Timer
+  std::chrono::milliseconds main_proc_timer_period_msec;
+  main_proc_timer_period_msec = std::chrono::duration_cast<std::chrono::milliseconds>(
     std::chrono::duration<double>(1.0 / 10.0));
   
-  auto timer_callback = std::bind(&DeliveryReservationLampManager::onTimer, this);
-  timer_ = std::make_shared<rclcpp::GenericTimer<decltype(timer_callback)>>(
-    this->get_clock(), timer_period_msec, std::move(timer_callback),
+  auto main_proc_timer_callback = std::bind(&DeliveryReservationLampManager::onTimer, this);
+  main_proc_timer_ = std::make_shared<rclcpp::GenericTimer<decltype(main_proc_timer_callback)>>(
+    this->get_clock(), main_proc_timer_period_msec, std::move(main_proc_timer_callback),
     this->get_node_base_interface()->get_context()
   );
 
@@ -62,7 +62,7 @@ DeliveryReservationLampManager::DeliveryReservationLampManager(
     this->get_node_base_interface()->get_context()
   );
 
-  this->get_node_timers_interface()->add_timer(timer_, nullptr);
+  this->get_node_timers_interface()->add_timer(main_proc_timer_, nullptr);
   this->get_node_timers_interface()->add_timer(blink_timer_, nullptr);
   blink_timer_->cancel();
 
