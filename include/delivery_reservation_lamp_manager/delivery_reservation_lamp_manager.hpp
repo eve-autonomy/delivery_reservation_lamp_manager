@@ -73,10 +73,10 @@ public:
   uint64_t blink_sequence_;
   BlinkType blink_type_;
   bool active_polarity_;
-  uint16_t receive_reservation_state_ = autoware_state_machine_msgs::msg::StateLock::STATE_OFF;
-  uint16_t current_reservation_state_ = autoware_state_machine_msgs::msg::StateLock::STATE_OFF;
-  uint16_t receive_shutdown_state_ = shutdown_manager_msgs::msg::StateShutdown::STATE_INACTIVE_FOR_SHUTDOWN;
-  uint16_t current_shutdown_state_ = shutdown_manager_msgs::msg::StateShutdown::STATE_INACTIVE_FOR_SHUTDOWN;
+  uint16_t receive_reservation_state_;
+  uint16_t current_reservation_state_;
+  uint16_t receive_shutdown_state_;
+  uint16_t current_shutdown_state_;
 
   void callbackReservationStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
   void callbackShutdownStateMessage(const shutdown_manager_msgs::msg::StateShutdown::ConstSharedPtr msg);

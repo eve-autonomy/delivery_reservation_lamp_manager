@@ -24,6 +24,11 @@ DeliveryReservationLampManager::DeliveryReservationLampManager(
   const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
 : Node("delivery_reservation_lamp_manager", options)
 {
+  receive_reservation_state_ = autoware_state_machine_msgs::msg::StateLock::STATE_OFF;
+  current_reservation_state_ = autoware_state_machine_msgs::msg::StateLock::STATE_OFF;
+  receive_shutdown_state_ = shutdown_manager_msgs::msg::StateShutdown::STATE_INACTIVE_FOR_SHUTDOWN;
+  current_shutdown_state_ = shutdown_manager_msgs::msg::StateShutdown::STATE_INACTIVE_FOR_SHUTDOWN;
+
   sub_reservation_state_ = this->create_subscription<autoware_state_machine_msgs::msg::StateLock>(
     "/autoware_state_machine/lock_state",
     rclcpp::QoS{3}.transient_local(),
