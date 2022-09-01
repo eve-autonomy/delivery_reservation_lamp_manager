@@ -24,7 +24,7 @@ DeliveryReservationLampManager::DeliveryReservationLampManager(
   const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
 : Node("delivery_reservation_lamp_manager", options)
 {
-  sub_reservation_lock_state_ = this->create_subscription<autoware_state_machine_msgs::msg::StateLock>(
+  sub_reservation_state_ = this->create_subscription<autoware_state_machine_msgs::msg::StateLock>(
     "/autoware_state_machine/lock_state",
     rclcpp::QoS{3}.transient_local(),
     std::bind(&DeliveryReservationLampManager::callbackReservationStateMessage, this, std::placeholders::_1)
@@ -83,7 +83,7 @@ void DeliveryReservationLampManager::callbackReservationStateMessage(
     *this->get_clock(), 1.0,
     "[DeliveryReservationLampManager::callbackReservationStateMessage]state: %d", msg->state);
 
-  receive_reservation_lock_state_ = msg->state;
+  receive_reservation_state_ = msg->state;
 }
 
 void DeliveryReservationLampManager::callbackShutdownStateMessage(
@@ -99,11 +99,11 @@ void DeliveryReservationLampManager::callbackShutdownStateMessage(
 
 void DeliveryReservationLampManager::onTimer(void)
 {
-  if ((receive_reservation_lock_state_ == current_reservation_lock_state_) &&
+  if ((receive_reservation_state_ == current_reservation_state_) &&
     (receive_shutdown_state_ == current_shutdown_state_)) {
     return;
   }
-  current_reservation_lock_state_ = receive_reservation_lock_state_;
+  current_reservation_state_ = receive_reservation_state_;
   current_shutdown_state_ = receive_shutdown_state_;
 
   blink_timer_->cancel();
@@ -112,9 +112,9 @@ void DeliveryReservationLampManager::onTimer(void)
   } else if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_START_OF_SHUTDOWN) {
     startLampBlinkOperation(BlinkType::TWO_BLINKS);
   } else {
-    if (current_reservation_lock_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
+    if (current_reservation_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
       publishLamp(false);
-    } else if (current_reservation_lock_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_VERIFICATION) {
+    } else if (current_reservation_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_VERIFICATION) {
       startLampBlinkOperation(BlinkType::SLOW_BLINK);
     } else {
       publishLamp(true);
