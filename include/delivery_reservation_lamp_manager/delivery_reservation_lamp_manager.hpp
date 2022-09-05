@@ -18,6 +18,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "autoware_state_machine_msgs/msg/state_lock.hpp"
 #include "dio_ros_driver/msg/dio_port.hpp"
+#include "shutdown_manager_msgs/msg/state_shutdown.hpp"
 
 namespace delivery_reservation_lamp_manager
 {
@@ -27,28 +28,67 @@ public:
   explicit DeliveryReservationLampManager(const rclcpp::NodeOptions & options);
   ~DeliveryReservationLampManager();
 
+  enum BlinkType
+  {
+    FAST_BLINK,
+    SLOW_BLINK,
+    TWO_BLINKS_UNTIL_EXPIRATION
+  };
+
   // Publisher
   rclcpp::Publisher<dio_ros_driver::msg::DIOPort>::SharedPtr pub_delivery_reservation_lamp_;
 
   // Subscription
-  rclcpp::Subscription<autoware_state_machine_msgs::msg::StateLock>::SharedPtr sub_state_;
+  rclcpp::Subscription<autoware_state_machine_msgs::msg::StateLock>::SharedPtr sub_reservation_state_;
+  rclcpp::Subscription<shutdown_manager_msgs::msg::StateShutdown>::SharedPtr sub_shutdown_state_;
 
-  #define BLINK_ON_DURATION (1.0)
-  #define BLINK_OFF_DURATION (1.0)
+  #define TWO_BLINKS_ON_DURATION (0.2)
+  #define TWO_BLINKS_OFF_DURATION (0.2)
+  #define TWO_BLINKS_IDLE_DURATION (1.5)
+  #define BLINK_FAST_ON_DURATION (0.5)
+  #define BLINK_FAST_OFF_DURATION (0.5)
+  #define BLINK_SLOW_ON_DURATION (1.0)
+  #define BLINK_SLOW_OFF_DURATION (1.0)
+
+  #define BLINK_INDENFINITELY (-1)
+  #define TWO_BLINKS_MAX_RETRY_COUNT (2)
+
   #define ACTIVE_POLARITY (false)
 
-  std::array<double, 2> blink_duration_table_ = {
-    BLINK_OFF_DURATION,
-    BLINK_ON_DURATION
+  std::array<double, 4> two_blinks_duration_table_ = {
+    TWO_BLINKS_IDLE_DURATION,
+    TWO_BLINKS_ON_DURATION,
+    TWO_BLINKS_OFF_DURATION,
+    TWO_BLINKS_ON_DURATION
   };
 
+  std::array<double, 2> fast_blink_duration_table_ = {
+    BLINK_FAST_OFF_DURATION,
+    BLINK_FAST_ON_DURATION
+  };
+
+  std::array<double, 2> slow_blink_duration_table_ = {
+    BLINK_SLOW_OFF_DURATION,
+    BLINK_SLOW_ON_DURATION
+  };
+
+  rclcpp::TimerBase::SharedPtr main_proc_timer_;
   rclcpp::TimerBase::SharedPtr blink_timer_;
   uint64_t blink_sequence_;
+  BlinkType blink_type_;
+  int blink_retry_count_;
+  int max_blink_retry_count_;
   bool active_polarity_;
+  uint16_t receive_reservation_state_;
+  uint16_t current_reservation_state_;
+  uint16_t receive_shutdown_state_;
+  uint16_t current_shutdown_state_;
 
-  void callbackStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
+  void callbackReservationStateMessage(const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg);
+  void callbackShutdownStateMessage(const shutdown_manager_msgs::msg::StateShutdown::ConstSharedPtr msg);
+  void onTimer(void);
   void publishLamp(const bool value);
-  void startLampBlinkOperation(void);
+  void startLampBlinkOperation(const BlinkType type, const int max_blink_retry_count);
   double getTimerDuration(void);
   void lampBlinkOperationCallback(void);
   void setPeriod(const double new_period);
