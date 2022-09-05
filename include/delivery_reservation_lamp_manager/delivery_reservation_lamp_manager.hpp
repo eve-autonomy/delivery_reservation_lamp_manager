@@ -32,7 +32,7 @@ public:
   {
     FAST_BLINK,
     SLOW_BLINK,
-    TWO_BLINKS_TWICE
+    TWO_BLINKS_UNTIL_EXPIRATION
   };
 
   // Publisher
@@ -50,7 +50,7 @@ public:
   #define BLINK_SLOW_ON_DURATION (1.0)
   #define BLINK_SLOW_OFF_DURATION (1.0)
 
-  #define UNLIMITED_BLINKS (-1)
+  #define BLINK_INDENFINITELY (-1)
   #define TWO_BLINKS_MAX_RETRY_COUNT (2)
 
   #define ACTIVE_POLARITY (false)

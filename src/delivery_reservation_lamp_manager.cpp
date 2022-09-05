@@ -114,14 +114,14 @@ void DeliveryReservationLampManager::onTimer(void)
   blink_timer_->cancel();
   if ((current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_STANDBY_FOR_SHUTDOWN) ||
     (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_START_OF_SHUTDOWN)) {
-    startLampBlinkOperation(BlinkType::FAST_BLINK, UNLIMITED_BLINKS);
+    startLampBlinkOperation(BlinkType::FAST_BLINK, BLINK_INDENFINITELY);
   } else if (current_shutdown_state_ == shutdown_manager_msgs::msg::StateShutdown::STATE_SUCCESSFUL_SHUTDOWN_INITIATION) {
-    startLampBlinkOperation(BlinkType::TWO_BLINKS_TWICE, TWO_BLINKS_MAX_RETRY_COUNT);
+    startLampBlinkOperation(BlinkType::TWO_BLINKS_UNTIL_EXPIRATION, TWO_BLINKS_MAX_RETRY_COUNT);
   } else {
     if (current_reservation_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_OFF) {
       publishLamp(false);
     } else if (current_reservation_state_ == autoware_state_machine_msgs::msg::StateLock::STATE_VERIFICATION) {
-      startLampBlinkOperation(BlinkType::SLOW_BLINK, UNLIMITED_BLINKS);
+      startLampBlinkOperation(BlinkType::SLOW_BLINK, BLINK_INDENFINITELY);
     } else {
       publishLamp(true);
     }
@@ -155,7 +155,7 @@ double DeliveryReservationLampManager::getTimerDuration(void)
       blink_sequence_ = 0;
     }
     return fast_blink_duration_table_.at(blink_sequence_);
-  } else if (blink_type_ == BlinkType::TWO_BLINKS_TWICE) {
+  } else if (blink_type_ == BlinkType::TWO_BLINKS_UNTIL_EXPIRATION) {
     if (two_blinks_duration_table_.size() <= blink_sequence_) {
       blink_retry_count_++;
       blink_sequence_ = 0;
@@ -179,7 +179,7 @@ void DeliveryReservationLampManager::lampBlinkOperationCallback(void)
 
   // If the maximum count of retries is exceeded,
   //  the LED will turn off and stop blinking.
-  if ((max_blink_retry_count_ != UNLIMITED_BLINKS) &&
+  if ((max_blink_retry_count_ != BLINK_INDENFINITELY) &&
     (blink_retry_count_ >= max_blink_retry_count_)) {
     publishLamp(false);
     return;
