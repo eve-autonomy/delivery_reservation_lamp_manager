@@ -83,9 +83,9 @@ DeliveryReservationLampManager::~DeliveryReservationLampManager()
 void DeliveryReservationLampManager::callbackReservationStateMessage(
   const autoware_state_machine_msgs::msg::StateLock::ConstSharedPtr msg)
 {
-  RCLCPP_INFO_THROTTLE(
+  RCLCPP_DEBUG_THROTTLE(
     this->get_logger(),
-    *this->get_clock(), 1.0,
+    *this->get_clock(), 1000,
     "[DeliveryReservationLampManager::callbackReservationStateMessage]state: %d", msg->state);
 
   receive_reservation_state_ = msg->state;
@@ -94,9 +94,9 @@ void DeliveryReservationLampManager::callbackReservationStateMessage(
 void DeliveryReservationLampManager::callbackShutdownStateMessage(
   const shutdown_manager_msgs::msg::StateShutdown::ConstSharedPtr msg)
 {
-  RCLCPP_INFO_THROTTLE(
+  RCLCPP_DEBUG_THROTTLE(
     this->get_logger(),
-    *this->get_clock(), 1.0,
+    *this->get_clock(), 1000,
     "[DeliveryReservationLampManager::callbackShutdownStateMessage]state: %d", msg->state);
 
   receive_shutdown_state_ = msg->state;
@@ -204,7 +204,7 @@ void DeliveryReservationLampManager::setPeriod(const double new_period)
   if (ret != RCL_RET_OK) {
     RCLCPP_INFO_THROTTLE(
       this->get_logger(),
-      *this->get_clock(), 1.0,
+      *this->get_clock(), 1000,
       "Couldn't exchange_period");
   }
   blink_timer_->reset();
